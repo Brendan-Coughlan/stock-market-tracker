@@ -2,7 +2,6 @@ package com.example.stockmarkettracker
 
 import TickerItem
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
@@ -14,18 +13,15 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -45,10 +41,12 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import com.example.stockmarkettracker.ui.theme.StockMarketTrackerTheme
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
+import com.example.stockmarkettracker.ui.StockViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.channels.ticker
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -62,26 +60,6 @@ class MainActivity : ComponentActivity() {
                     )
                 }
             }
-        }
-    }
-}
-
-fun performSearch(query: String, results: SnapshotStateList<TickerItem>, coroutineScope : CoroutineScope, isLoading : MutableState<Boolean>) {
-    results.clear()
-    isLoading.value = true
-    coroutineScope.launch {
-        try {
-            val response = StockApi.retrofitService.getTickers(
-                search = query,
-                apiKey = "HpgP9ZvVg92ynx9g5xThMY3YrH3ZYP1b"
-            )
-
-            results.addAll(response.results)
-        } catch (e: Exception) {
-            Log.e("API_ERROR", "Failed: ${e.message}")
-        }
-        finally {
-            isLoading.value = false
         }
     }
 }
@@ -121,12 +99,12 @@ fun TickerCard(tickerItem: TickerItem) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchPage(modifier: Modifier = Modifier) {
-    val isLoading = remember { mutableStateOf(false) }
+    val viewModel: StockViewModel = viewModel()
+    val tickerList by viewModel.tickerList.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
     val searchText = remember { mutableStateOf("") }
-    val results = remember { mutableStateListOf<TickerItem>() }
-    val coroutineScope = rememberCoroutineScope()
 
-    Column (
+    Column(
         modifier.fillMaxSize().background(Color(15, 15, 15)),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -161,13 +139,13 @@ fun SearchPage(modifier: Modifier = Modifier) {
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
             keyboardActions = KeyboardActions(
                 onSearch = {
-                    performSearch(searchText.value, results, coroutineScope, isLoading)
+                    viewModel.searchTickers(searchText.value)
                 }
             )
         )
         Button(
             onClick = {
-                performSearch(searchText.value, results, coroutineScope, isLoading)
+                viewModel.searchTickers(searchText.value)
             },
             modifier = Modifier.border(2.dp, Color(200, 200, 200), RoundedCornerShape(20.dp)),
             colors = ButtonDefaults.buttonColors(
@@ -179,7 +157,7 @@ fun SearchPage(modifier: Modifier = Modifier) {
         }
         LazyColumn(modifier = Modifier.padding(top = 20.dp)) {
             item {
-                if (isLoading.value) {
+                if (isLoading) {
                     CircularProgressIndicator(
                         color = Color(200, 200, 200),
                         modifier = Modifier.padding(16.dp)
@@ -187,13 +165,12 @@ fun SearchPage(modifier: Modifier = Modifier) {
                 }
             }
 
-            items(results) { result ->
+            items(tickerList.toList()) { result ->
                 TickerCard(tickerItem = result)
             }
         }
     }
 }
-
 
 @Preview(showBackground = true)
 @Composable

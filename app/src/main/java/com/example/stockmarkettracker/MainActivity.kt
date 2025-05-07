@@ -43,6 +43,10 @@ import androidx.compose.material3.Button
 import com.example.stockmarkettracker.ui.theme.StockMarketTrackerTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.NavController
+import androidx.navigation.testing.TestNavHostController
+import androidx.compose.ui.platform.LocalContext
 import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
@@ -53,9 +57,12 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            val navController = rememberNavController()
+
             StockMarketTrackerTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    SearchPage(
+                    AppNavGraph(
+                        navController = navController,
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
@@ -82,7 +89,7 @@ fun performSearch(query: String, results: SnapshotStateList<TickerItem>, corouti
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchPage(modifier: Modifier = Modifier) {
+fun SearchPage(navController: NavController, modifier: Modifier = Modifier) {
     val searchText = remember { mutableStateOf("") }
     val results = remember { mutableStateListOf<TickerItem>() }
     val coroutineScope = rememberCoroutineScope()
@@ -136,6 +143,20 @@ fun SearchPage(modifier: Modifier = Modifier) {
         ) {
             Text("Search", fontSize = 20.sp)
         }
+        Button(
+            onClick = { navController.navigate(Routes.WATCHLIST) },
+            modifier = Modifier.padding(top = 16.dp)
+        ) {
+            Text("Watchlist")
+        }
+
+        Button(
+            onClick = { navController.navigate(Routes.ALERTS) },
+            modifier = Modifier.padding(top = 8.dp)
+        ) {
+            Text("Alerts")
+        }
+
         Column(modifier = Modifier.padding(top = 20.dp)) {
             results.forEach { result ->
                 Text(
@@ -153,7 +174,26 @@ fun SearchPage(modifier: Modifier = Modifier) {
 @Preview(showBackground = true)
 @Composable
 fun SearchPagePreview() {
+    val context = LocalContext.current
+    val testNavController = remember { TestNavHostController(context) }
+
     StockMarketTrackerTheme {
-        SearchPage()
+        SearchPage(navController = testNavController)
     }
 }
+
+    @Preview(showBackground = true)
+    @Composable
+    fun WatchlistTestPage() {
+        val context = LocalContext.current
+        val testNavController = remember { TestNavHostController(context) }
+
+        StockMarketTrackerTheme {
+            Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                WatchlistScreen(
+                    navController = testNavController,
+                    modifier = Modifier.padding(innerPadding)
+                )
+            }
+        }
+    }

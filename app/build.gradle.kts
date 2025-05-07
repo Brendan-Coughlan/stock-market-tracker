@@ -52,8 +52,9 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.retrofit2.retrofit)
     implementation(libs.converter.gson)
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
+    implementation("androidx.navigation:navigation-compose:2.7.7")
     implementation(libs.coil.compose)
-    implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.room.runtime)
 //    ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
@@ -64,4 +65,6 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    debugImplementation("androidx.navigation:navigation-testing:2.7.7")
+
 }

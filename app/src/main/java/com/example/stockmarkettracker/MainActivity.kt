@@ -44,6 +44,15 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import com.example.stockmarkettracker.ui.theme.StockMarketTrackerTheme
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.NavController
+import androidx.navigation.testing.TestNavHostController
+import androidx.compose.ui.platform.LocalContext
+import org.json.JSONObject
+import java.net.HttpURLConnection
+import java.net.URL
 import com.example.stockmarkettracker.ui.StockViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.channels.ticker
@@ -53,9 +62,12 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            val navController = rememberNavController()
+
             StockMarketTrackerTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    SearchPage(
+                    AppNavGraph(
+                        navController = navController,
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
@@ -98,7 +110,7 @@ fun TickerCard(tickerItem: TickerItem) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchPage(modifier: Modifier = Modifier) {
+fun SearchPage(navController: NavController, modifier: Modifier = Modifier) {
     val viewModel: StockViewModel = viewModel()
     val tickerList by viewModel.tickerList.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
@@ -155,6 +167,28 @@ fun SearchPage(modifier: Modifier = Modifier) {
         ) {
             Text("Search", fontSize = 20.sp)
         }
+        Button(
+            onClick = { navController.navigate(Routes.WATCHLIST) },
+            modifier = Modifier.padding(top = 16.dp)
+        ) {
+            Text("Watchlist")
+        }
+
+        Button(
+            onClick = { navController.navigate(Routes.ALERTS) },
+            modifier = Modifier.padding(top = 8.dp)
+        ) {
+            Text("Alerts")
+        }
+
+        Column(modifier = Modifier.padding(top = 20.dp)) {
+            results.forEach { result ->
+                Text(
+                    text = "${result.ticker} – ${result.name}",
+                    color = Color.White,
+                    fontSize = 20.sp,
+                    modifier = Modifier.padding(vertical = 4.dp)
+                )
         LazyColumn(modifier = Modifier.padding(top = 20.dp)) {
             item {
                 if (isLoading) {
@@ -175,7 +209,26 @@ fun SearchPage(modifier: Modifier = Modifier) {
 @Preview(showBackground = true)
 @Composable
 fun SearchPagePreview() {
+    val context = LocalContext.current
+    val testNavController = remember { TestNavHostController(context) }
+
     StockMarketTrackerTheme {
-        SearchPage()
+        SearchPage(navController = testNavController)
     }
 }
+
+    @Preview(showBackground = true)
+    @Composable
+    fun WatchlistTestPage() {
+        val context = LocalContext.current
+        val testNavController = remember { TestNavHostController(context) }
+
+        StockMarketTrackerTheme {
+            Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                WatchlistScreen(
+                    navController = testNavController,
+                    modifier = Modifier.padding(innerPadding)
+                )
+            }
+        }
+    }

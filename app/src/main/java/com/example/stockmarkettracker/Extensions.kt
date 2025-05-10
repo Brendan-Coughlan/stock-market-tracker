@@ -1,10 +1,13 @@
 package com.example.stockmarkettracker
 
-fun TickerItem.toStock(): Stock {
-    return Stock(
+import com.example.stockmarkettracker.data.StockDisplay
+import com.example.stockmarkettracker.data.StockSnapshot
+
+fun StockSnapshot.toStockDisplay(): StockDisplay {
+    return StockDisplay(
         ticker = this.ticker,
-        companyName = this.name,
-        currentPrice = 0.0,      // Placeholder for now
-        percentChange = 0.0      // Placeholder for now
+        companyName = "Test",
+        currentPrice = this.day.c,
+        percentChange = this.todaysChangePerc
     )
 }

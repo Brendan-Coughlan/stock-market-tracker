@@ -1,6 +1,6 @@
 package com.example.stockmarkettracker
 
-import TickerItem
+import SearchPage
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -76,136 +76,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@Composable
-fun TickerCard(tickerItem: TickerItem) {
-    Card(
-        modifier = Modifier
-            .padding(8.dp)
-            .fillMaxWidth()
-            .border(1.dp, Color(200, 200, 200), RoundedCornerShape(8.dp))
-            .background(Color(15, 15, 15)),
-        colors = CardDefaults.cardColors(
-            containerColor = Color(15, 15, 15) // Slightly lighter than black
-        )
-    ) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            Text(
-                text = tickerItem.ticker,
-                color = Color(200, 200, 200),
-                fontSize = 24.sp
-            )
-            Text(
-                text = tickerItem.name,
-                color = Color.Gray,
-                fontSize = 16.sp
-            )
-            Text(
-                text = "Market: ${tickerItem.market} | Exchange: ${tickerItem.primaryExchange}",
-                color = Color.LightGray,
-                fontSize = 14.sp
-            )
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun SearchPage(navController: NavController, modifier: Modifier = Modifier) {
-    val viewModel: StockViewModel = viewModel()
-    val tickerList by viewModel.tickerList.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
-    val searchText = remember { mutableStateOf("") }
-
-    Column(
-        modifier.fillMaxSize().background(Color(15, 15, 15)),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = "Search",
-            color = Color(200, 200, 200),
-            textAlign = TextAlign.Center,
-            fontSize = 50.sp,
-            fontFamily = FontFamily.SansSerif,
-            modifier = modifier
-        )
-        TextField(
-            value = searchText.value,
-            onValueChange = { searchText.value = it },
-            textStyle = TextStyle(
-                fontSize = 25.sp,
-                color = Color(200, 200, 200),
-                textAlign = TextAlign.Center
-            ),
-            modifier = modifier.width(250.dp)
-                .border(
-                    width = 2.dp,
-                    color = Color(200, 200, 200),
-                    shape = RoundedCornerShape(20.dp)
-                ),
-            colors = TextFieldDefaults.textFieldColors(
-                containerColor = Color.Transparent,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-                cursorColor = Color(200, 200, 200)
-            ),
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-            keyboardActions = KeyboardActions(
-                onSearch = {
-                    viewModel.searchTickers(searchText.value)
-                }
-            )
-        )
-        Button(
-            onClick = {
-                viewModel.searchTickers(searchText.value)
-            },
-            modifier = Modifier.border(2.dp, Color(200, 200, 200), RoundedCornerShape(20.dp)),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(15, 15, 15),  // Button background
-                contentColor = Color(200, 200, 200)  // Text color
-            )
-        ) {
-            Text("Search", fontSize = 20.sp)
-        }
-        Button(
-            onClick = { navController.navigate(Routes.WATCHLIST) },
-            modifier = Modifier.padding(top = 16.dp)
-        ) {
-            Text("Watchlist")
-        }
-
-        Button(
-            onClick = { navController.navigate(Routes.ALERTS) },
-            modifier = Modifier.padding(top = 8.dp)
-        ) {
-            Text("Alerts")
-        }
-
-        Column(modifier = Modifier.padding(top = 20.dp)) {
-            results.forEach { result ->
-                Text(
-                    text = "${result.ticker} – ${result.name}",
-                    color = Color.White,
-                    fontSize = 20.sp,
-                    modifier = Modifier.padding(vertical = 4.dp)
-                )
-        LazyColumn(modifier = Modifier.padding(top = 20.dp)) {
-            item {
-                if (isLoading) {
-                    CircularProgressIndicator(
-                        color = Color(200, 200, 200),
-                        modifier = Modifier.padding(16.dp)
-                    )
-                }
-            }
-
-            items(tickerList.toList()) { result ->
-                TickerCard(tickerItem = result)
-            }
-        }
-    }
-}
-
 @Preview(showBackground = true)
 @Composable
 fun SearchPagePreview() {
@@ -217,18 +87,18 @@ fun SearchPagePreview() {
     }
 }
 
-    @Preview(showBackground = true)
-    @Composable
-    fun WatchlistTestPage() {
-        val context = LocalContext.current
-        val testNavController = remember { TestNavHostController(context) }
-
-        StockMarketTrackerTheme {
-            Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                WatchlistScreen(
-                    navController = testNavController,
-                    modifier = Modifier.padding(innerPadding)
-                )
-            }
-        }
-    }
+//        @Preview(showBackground = true)
+//    @Composable
+//    fun WatchlistTestPage() {
+//        val context = LocalContext.current
+//        val testNavController = remember { TestNavHostController(context) }
+//
+//        StockMarketTrackerTheme {
+//            Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+//                WatchlistScreen(
+//                    navController = testNavController,
+//                    modifier = Modifier.padding(innerPadding)
+//                )
+//            }
+//        }
+//    }

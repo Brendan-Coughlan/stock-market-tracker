@@ -1,17 +1,24 @@
 package com.example.stockmarkettracker
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -24,8 +31,9 @@ import com.example.stockmarkettracker.data.TickerRepository
 import com.example.stockmarkettracker.network.NetworkStockRepository
 import com.example.stockmarkettracker.ui.StockViewModel
 import com.example.stockmarkettracker.ui.StockViewModelFactory
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.ui.res.painterResource
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+
 
 @Composable
 fun AlertsScreen(
@@ -44,6 +52,9 @@ fun AlertsScreen(
 
     val alerts = viewModel.alerts.collectAsState().value
     val isLoading = viewModel.isAlertLoading.collectAsState().value
+    val visibleAlerts = remember { mutableStateMapOf<Int, Boolean>() }
+    val coroutineScope = rememberCoroutineScope()
+
 
     Column(
         modifier = modifier
@@ -53,11 +64,12 @@ fun AlertsScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(modifier = Modifier.height(32.dp))
+
         Image(
             painter = painterResource(id = R.drawable.alert),
             contentDescription = "Bull Market Logo",
             modifier = Modifier
-                .size(150.dp) // Adjust the size
+                .size(150.dp)
                 .align(Alignment.CenterHorizontally)
                 .padding(top = 32.dp)
         )
@@ -83,38 +95,53 @@ fun AlertsScreen(
                 modifier = Modifier.padding(8.dp)
             )
         } else {
-            alerts.forEach { alert ->
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(25, 25, 25)),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+            LazyColumn(modifier = Modifier.weight(1f)) {
+                items(alerts, key = { it.id }) { alert ->
+                    val isVisible = visibleAlerts.getOrPut(alert.id) { true }
+
+                    AnimatedVisibility(
+                        visible = isVisible,
+                        exit = scaleOut(tween(300)) + fadeOut(tween(300))
                     ) {
-                        Column {
-                            Text(alert.symbol, fontWeight = FontWeight.Bold, fontSize = 20.sp, color = Color.White)
-                            Text(
-                                text = "Alert when ${if (alert.isAbove) "above" else "below"} $${alert.targetPrice}",
-                                color = Color.LightGray
-                            )
-                        }
-                        Button(
-                            onClick = { viewModel.removeAlert(alert) },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
-                            shape = RoundedCornerShape(10.dp)
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color(25, 25, 25)),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+                            shape = RoundedCornerShape(12.dp)
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = null
-                            )
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column {
+                                    Text(alert.symbol, fontWeight = FontWeight.Bold, fontSize = 20.sp, color = Color.White)
+                                    Text(
+                                        text = "Alert when ${if (alert.isAbove) "above" else "below"} $${alert.targetPrice}",
+                                        color = Color.LightGray
+                                    )
+                                }
+                                Button(
+                                    onClick = {
+                                        visibleAlerts[alert.id] = false
+                                        coroutineScope.launch {
+                                            delay(300)
+                                            viewModel.removeAlert(alert)
+                                        }
+                                    },
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+                                    shape = RoundedCornerShape(10.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Delete,
+                                        contentDescription = null
+                                    )
+                                }
+                            }
                         }
                     }
                 }

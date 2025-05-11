@@ -180,7 +180,7 @@ fun SearchPage(navController: NavController, modifier: Modifier = Modifier) {
                 .border(1.dp, Color.Gray, RoundedCornerShape(15.dp)),
             shape = RoundedCornerShape(20.dp),
             colors = TextFieldDefaults.textFieldColors(
-                containerColor = Color.DarkGray,
+                containerColor = Color(0xFF0A1F33),
                 cursorColor = Color.White,
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent

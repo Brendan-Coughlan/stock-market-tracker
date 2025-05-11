@@ -51,6 +51,7 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.retrofit2.retrofit)
+    implementation("androidx.compose.ui:ui-text:1.5.0") // or the latest version matching your BOM
     implementation(libs.converter.gson)
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
     implementation("androidx.navigation:navigation-compose:2.7.7")

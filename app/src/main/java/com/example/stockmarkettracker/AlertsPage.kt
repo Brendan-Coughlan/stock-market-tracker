@@ -1,28 +1,20 @@
 package com.example.stockmarkettracker
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -32,8 +24,8 @@ import com.example.stockmarkettracker.data.TickerRepository
 import com.example.stockmarkettracker.network.NetworkStockRepository
 import com.example.stockmarkettracker.ui.StockViewModel
 import com.example.stockmarkettracker.ui.StockViewModelFactory
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.res.painterResource
 
 @Composable
 fun AlertsScreen(
@@ -56,26 +48,39 @@ fun AlertsScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .background(Color.Black)
+            .padding(horizontal = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = "Price Alerts",
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.Black,
-            modifier = Modifier.align(Alignment.CenterHorizontally)
+        Spacer(modifier = Modifier.height(32.dp))
+        Image(
+            painter = painterResource(id = R.drawable.alert),
+            contentDescription = "Bull Market Logo",
+            modifier = Modifier
+                .size(150.dp) // Adjust the size
+                .align(Alignment.CenterHorizontally)
+                .padding(top = 32.dp)
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = "Price Alerts",
+            fontSize = 32.sp,
+            fontWeight = FontWeight.Bold,
+            fontFamily = FontFamily.SansSerif,
+            color = Color.White,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
 
         if (isLoading) {
-            CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+            CircularProgressIndicator(modifier = Modifier.padding(16.dp), color = Color.White)
         } else if (alerts.isEmpty()) {
             Text(
                 text = "No alerts set yet.",
                 fontSize = 20.sp,
-                color = Color.DarkGray,
-                modifier = Modifier.align(Alignment.CenterHorizontally)
+                color = Color.Gray,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(8.dp)
             )
         } else {
             alerts.forEach { alert ->
@@ -83,23 +88,28 @@ fun AlertsScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 8.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFF0F0F0))
+                    colors = CardDefaults.cardColors(containerColor = Color(25, 25, 25)),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+                    shape = RoundedCornerShape(12.dp)
                 ) {
                     Row(
-                        modifier = Modifier.padding(16.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column {
-                            Text(alert.symbol, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                            Text(alert.symbol, fontWeight = FontWeight.Bold, fontSize = 20.sp, color = Color.White)
                             Text(
                                 text = "Alert when ${if (alert.isAbove) "above" else "below"} $${alert.targetPrice}",
-                                color = Color.Gray
+                                color = Color.LightGray
                             )
                         }
                         Button(
                             onClick = { viewModel.removeAlert(alert) },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+                            shape = RoundedCornerShape(10.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
@@ -111,11 +121,16 @@ fun AlertsScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         Button(
             onClick = { navController.navigate(Routes.SEARCH) },
-            modifier = Modifier.align(Alignment.CenterHorizontally)
+            shape = RoundedCornerShape(12.dp),
+            elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF0A1F33),
+                contentColor = Color.White
+            )
         ) {
             Text("Back to Search")
         }

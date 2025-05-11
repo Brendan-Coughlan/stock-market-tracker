@@ -125,22 +125,23 @@ fun AlertsScreen(
                                         color = Color.LightGray
                                     )
                                 }
-                                Button(
+                                IconButton(
                                     onClick = {
                                         visibleAlerts[alert.id] = false
                                         coroutineScope.launch {
                                             delay(300)
                                             viewModel.removeAlert(alert)
                                         }
-                                    },
-                                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
-                                    shape = RoundedCornerShape(10.dp)
+                                    }
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Delete,
-                                        contentDescription = null
+                                        contentDescription = "Remove Alert",
+                                        tint = Color.Red
                                     )
                                 }
+
+
                             }
                         }
                     }

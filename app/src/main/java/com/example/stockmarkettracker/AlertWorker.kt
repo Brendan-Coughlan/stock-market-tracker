@@ -58,7 +58,7 @@ class AlertWorker(
     @SuppressLint("MissingPermission")
     private fun sendNotification(context: Context, symbol: String, price: Double, alert: PriceAlert) {
         val builder = NotificationCompat.Builder(context, "alerts_channel")
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle("Price Alert: $symbol")
             .setContentText("Current price $price hit your target ${if (alert.isAbove) "above" else "below"} ${alert.targetPrice}")
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)

@@ -190,7 +190,7 @@ class StockViewModel(
     @SuppressLint("MissingPermission")
     fun triggerNotification(context: Context, title: String, message: String) {
         val builder = NotificationCompat.Builder(context, "alerts_channel")
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(title)
             .setContentText(message)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)

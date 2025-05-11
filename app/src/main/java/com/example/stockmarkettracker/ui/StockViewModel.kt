@@ -63,6 +63,7 @@ class StockViewModel(
             alertRepository.getAlerts().first()
             _isAlertLoading.value = false
         }
+        refreshWatchlist()
     }
 
     val watchlist: StateFlow<List<Ticker>> = tickerRepository
@@ -98,12 +99,14 @@ class StockViewModel(
             val ticker = Ticker(symbol = tickerSymbol)
             tickerRepository.insert(ticker)
         }
+        refreshWatchlist()
     }
 
     fun removeFromWatchlist(tickerSymbol: String) {
         viewModelScope.launch {
             tickerRepository.remove(tickerSymbol)
         }
+        refreshWatchlist()
     }
 
     fun refreshWatchlist() {

@@ -1,9 +1,17 @@
 package com.example.stockmarkettracker.ui
 
+import android.annotation.SuppressLint
+import android.content.Context
 import android.util.Log
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Notifications
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.stockmarkettracker.R
 import com.example.stockmarkettracker.data.PriceAlert
 import com.example.stockmarkettracker.data.StockDisplay
 import com.example.stockmarkettracker.data.StockSummary
@@ -51,7 +59,6 @@ class StockViewModel(
     val isAlertLoading: StateFlow<Boolean> = _isAlertLoading
 
     init {
-        refreshWatchlist()
         viewModelScope.launch {
             alertRepository.getAlerts().first()
             _isAlertLoading.value = false
@@ -90,14 +97,12 @@ class StockViewModel(
         viewModelScope.launch {
             val ticker = Ticker(symbol = tickerSymbol)
             tickerRepository.insert(ticker)
-            refreshWatchlist()
         }
     }
 
     fun removeFromWatchlist(tickerSymbol: String) {
         viewModelScope.launch {
             tickerRepository.remove(tickerSymbol)
-            refreshWatchlist()
         }
     }
 
@@ -124,6 +129,29 @@ class StockViewModel(
         }
     }
 
+    fun refreshAlerts(context: Context) {
+        viewModelScope.launch {
+            try {
+                val alerts = alertRepository.getAlerts().first()
+                val alertSymbols = alerts.map { it.symbol }.distinct()
+
+                if (alertSymbols.isNotEmpty()) {
+                    val symbols = alertSymbols.joinToString(",")
+                    val response = StockApi.retrofitService.getSnapshotTickers(
+                        tickers = symbols,
+                        apiKey = "HpgP9ZvVg92ynx9g5xThMY3YrH3ZYP1b"
+                    )
+
+                    val priceMap = response.tickers.associate { it.ticker to it.day.c }
+                    checkAlerts(context, priceMap)
+                }
+            } catch (e: Exception) {
+                Log.e("AlertRefresh", "Failed to fetch alert prices: ${e.message}")
+            }
+        }
+    }
+
+
     fun addAlert(symbol: String, targetPrice: Double, isAbove: Boolean) {
         viewModelScope.launch {
             alertRepository.addAlert(PriceAlert(symbol = symbol, targetPrice = targetPrice, isAbove = isAbove))
@@ -133,6 +161,42 @@ class StockViewModel(
     fun removeAlert(alert: PriceAlert) {
         viewModelScope.launch {
             alertRepository.removeAlert(alert)
+        }
+    }
+
+    fun checkAlerts(context: Context, priceMap: Map<String, Double>) {
+        viewModelScope.launch {
+            val alerts = alertRepository.getAlerts().first()
+            alerts.forEach { alert ->
+                val currentPrice = priceMap[alert.symbol] ?: return@forEach
+                val triggered = if (alert.isAbove) {
+                    currentPrice >= alert.targetPrice
+                } else {
+                    currentPrice <= alert.targetPrice
+                }
+                Log.i("AlertCheck", "Checking alert for ${alert.symbol}")
+                if (triggered) {
+                    Log.i("AlertCheck", "🔔 Alert triggered for ${alert.symbol}")
+                    triggerNotification(
+                        context,
+                        "Price Alert: ${alert.symbol}",
+                        "Current price: $currentPrice hit your target ${if (alert.isAbove) "above" else "below"} ${alert.targetPrice}"
+                    )
+                }
+            }
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    fun triggerNotification(context: Context, title: String, message: String) {
+        val builder = NotificationCompat.Builder(context, "alerts_channel")
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setContentTitle(title)
+            .setContentText(message)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+
+        with(NotificationManagerCompat.from(context)) {
+            notify(System.currentTimeMillis().toInt(), builder.build())
         }
     }
 }

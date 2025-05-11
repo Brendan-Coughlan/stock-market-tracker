@@ -55,6 +55,7 @@ dependencies {
     implementation(libs.converter.gson)
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
     implementation("androidx.navigation:navigation-compose:2.7.7")
+    implementation("androidx.compose.animation:animation:1.5.0") // or latest version
     implementation(libs.coil.compose)
     implementation(libs.androidx.room.runtime)
     ksp(libs.androidx.room.compiler)

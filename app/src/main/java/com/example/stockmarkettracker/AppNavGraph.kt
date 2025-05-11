@@ -1,12 +1,11 @@
 package com.example.stockmarkettracker
 
+import SearchPage
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.compose.ui.Modifier
-
-
 
 @Composable
 fun AppNavGraph(
